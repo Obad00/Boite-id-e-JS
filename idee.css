@@ -7,6 +7,10 @@ body {
     justify-content: center;
     align-items: flex-start;
     min-height: 100vh;
+    background-image: url('https://img.freepik.com/premium-vector/light-bulb-up-from-opening-box-many-box-background_40073-63.jpg?w=1060'); 
+    background-size: cover; 
+    background-repeat: no-repeat; 
+    background-position: center; 
 }
 
 .container {
@@ -32,6 +36,29 @@ h1 {
     border-radius: 8px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
+
+/* .idea-card {
+    border: 1px solid #ccc;
+    padding: 10px;
+    margin-bottom: 10px;
+}
+
+.idea-card .actions {
+    margin-top: 10px;
+}
+
+.idea-card button {
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
+}
+
+.idea-card button i {
+    font-size: 1.2rem;
+    color: #333;
+    margin-right: 5px;
+} */
+
 
 form {
     width: 100%;
