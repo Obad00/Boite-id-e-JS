@@ -21,7 +21,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const idea = { prenom, nom, title, category, description, approved: false };
         ideas.push(idea);
-        setCookie('ideas', ideas, 30); // Stocker les idées dans un cookie pendant 30 jours
+        setCookie('ideas', ideas, 30); 
         form.reset();
         showMessage('Idée ajoutée avec succès!', 'success');
         displayIdeas();
@@ -111,6 +111,33 @@ document.addEventListener('DOMContentLoaded', () => {
             ideasContainer.appendChild(ideaRow);
         });
     }
+
+    // function displayIdeas() {
+    //     const ideasDiv = document.getElementById('ideasContainer');
+    //     ideasDiv.innerHTML = ''; 
+    
+    //     ideas.forEach((idea, index) => {
+    //         // Créer les éléments pour chaque idée
+    //         const ideaCard = document.createElement('div');
+    //         ideaCard.classList.add('idea-card'); 
+    
+    //         ideaCard.innerHTML = `
+    //             <div><strong>Prénom:</strong> ${idea.prenom}</div>
+    //             <div><strong>Nom:</strong> ${idea.nom}</div>
+    //             <div><strong>Libellé:</strong> ${idea.title}</div>
+    //             <div><strong>Catégorie:</strong> ${idea.category}</div>
+    //             <div><strong>Description:</strong> ${idea.description}</div>
+    //             <div><strong>Statut:</strong> ${idea.approved ? '<i class="fas fa-check-circle"></i>' : '<i class="fas fa-clock"></i>'}</div>
+    //             <div class="actions">
+    //                 <button onclick="approveIdea(${index})"><i class="fas fa-thumbs-${idea.approved ? 'down' : 'up'}"></i></button>
+    //                 <button onclick="deleteIdea(${index})"><i class="fas fa-trash-alt"></i></button>
+    //             </div>
+    //         `;
+    
+    //         ideasDiv.appendChild(ideaCard); 
+    //     });
+    // }
+    
     
     
 
@@ -149,9 +176,7 @@ document.addEventListener('DOMContentLoaded', () => {
         return [];
     }
     
-    function deleteCookie(name) {
-        document.cookie = name + '=; Max-Age=-99999999;';
-    }
+    
     
 
     displayIdeas();
