@@ -1,158 +1,164 @@
-document.addEventListener('DOMContentLoaded', () => {
-    const form = document.getElementById('ideaForm');
-    const messageDiv = document.getElementById('message');
-    const ideasContainer = document.querySelector('#ideasContainer tbody');
-    let ideas = getCookie('ideas') || [];
+document.addEventListener("DOMContentLoaded", () => {
+    const form = document.getElementById("ideaForm");
+    const message = document.getElementById("message");
+    const prenom = document.getElementById("prenom");
+    const nom = document.getElementById("nom");
+    const title = document.getElementById("title");
+    const category = document.getElementById("category");
+    const description = document.getElementById("description");
+    const ideasContainer = document.getElementById("ideasContainer");
 
-    form.addEventListener('submit', (event) => {
+    form.addEventListener("submit", function(event) {
         event.preventDefault();
 
-        // Validation des champs prénom, nom, libellé, catégorie et message descriptif
-        if (!validatePrenom() || !validateNom() || !validateRequired('title') || !validateRequired('category') || !validateRequired('description')) {
-            showMessage('Veuillez remplir tous les champs obligatoires.', 'error');
-            return;
+        clearErrors();
+        
+        const prenomValue = sanitizeInput(prenom.value.trim());
+        const nomValue = sanitizeInput(nom.value.trim());
+        const titleValue = sanitizeInput(title.value.trim());
+        const categoryValue = sanitizeInput(category.value.trim());
+        const descriptionValue = sanitizeInput(description.value.trim());
+
+        if (validateForm(prenomValue, nomValue, titleValue, categoryValue, descriptionValue)) {
+            addIdea(prenomValue, nomValue, titleValue, categoryValue, descriptionValue, "En attente"); // Ajout avec statut initial "En attente"
+            form.reset();
+
+            // Cacher le formulaire et le tableau et afficher le message de succès temporairement
+            form.style.display = "none";
+            ideasContainer.style.display = "none";
+            message.textContent = "Idée ajoutée avec succès!";
+            setTimeout(() => {
+                form.style.display = "block";
+                ideasContainer.style.display = "block";
+                message.textContent = "";
+            }, 2000);
+
+            // Stocker les données dans les cookies
+            storeIdeasInCookies();
         }
-
-        const prenom = document.getElementById('prenom').value.trim();
-        const nom = document.getElementById('nom').value.trim();
-        const title = document.getElementById('title').value.trim();
-        const category = document.getElementById('category').value;
-        const description = document.getElementById('description').value.trim();
-
-        const idea = { prenom, nom, title, category, description, approved: false };
-        ideas.push(idea);
-        setCookie('ideas', ideas, 30); // Stocker les idées dans un cookie pendant 30 jours
-        form.reset();
-        showMessage('Idée ajoutée avec succès!', 'success');
-        displayIdeas();
     });
 
-    function showMessage(message, type) {
-        messageDiv.textContent = message;
-        messageDiv.className = type;
-        setTimeout(() => {
-            messageDiv.textContent = '';
-        }, 2000);
-    }
+    function validateForm(prenom, nom, title, category, description) {
+        let isValid = true;
 
-    function validatePrenom() {
-        const prenom = document.getElementById('prenom').value.trim();
-        const prenomError = document.getElementById('prenomError');
-        const noDigitsPattern = /^[^\d]*$/;
-
-        prenomError.textContent = '';
-        if (prenom.length < 3 || prenom.length > 15) {
-            prenomError.textContent = 'Le prénom doit contenir entre 3 et 15 caractères.';
-            document.getElementById('prenom').classList.add('error');
-            return false;
-        } else if (!noDigitsPattern.test(prenom)) {
-            prenomError.textContent = 'Le prénom ne doit pas contenir de chiffres.';
-            document.getElementById('prenom').classList.add('error');
-            return false;
-        } else {
-            document.getElementById('prenom').classList.remove('error');
+        if (prenom === "") {
+            showError("prenomError", "Le prénom est requis.");
+            isValid = false;
         }
-        return true;
-    }
 
-    function validateNom() {
-        const nom = document.getElementById('nom').value.trim();
-        const nomError = document.getElementById('nomError');
-        const noDigitsPattern = /^[^\d]*$/;
-
-        nomError.textContent = '';
-        if (nom.length < 3 || nom.length > 15) {
-            nomError.textContent = 'Le nom doit contenir entre 3 et 15 caractères.';
-            document.getElementById('nom').classList.add('error');
-            return false;
-        } else if (!noDigitsPattern.test(nom)) {
-            nomError.textContent = 'Le nom ne doit pas contenir de chiffres.';
-            document.getElementById('nom').classList.add('error');
-            return false;
-        } else {
-            document.getElementById('nom').classList.remove('error');
+        if (nom === "") {
+            showError("nomError", "Le nom est requis.");
+            isValid = false;
         }
-        return true;
-    }
 
-    function validateRequired(fieldId) {
-        const field = document.getElementById(fieldId);
-        const value = field.value.trim();
-        const errorElement = document.getElementById(`${fieldId}Error`);
-
-        errorElement.textContent = '';
-        if (value === '') {
-            errorElement.textContent = `Le champ ${field.getAttribute('name')} est obligatoire.`;
-            field.classList.add('error');
-            return false;
-        } else {
-            field.classList.remove('error');
+        if (title === "") {
+            showError("titleError", "Le libellé est requis.");
+            isValid = false;
         }
-        return true;
+
+        if (category === "") {
+            showError("categoryError", "La catégorie est requise.");
+            isValid = false;
+        }
+
+        if (description === "") {
+            showError("descriptionError", "Le message descriptif est requis.");
+            isValid = false;
+        }
+
+        return isValid;
     }
 
-    function displayIdeas() {
-        ideasContainer.innerHTML = '';
-        ideas.forEach((idea, index) => {
-            const ideaRow = document.createElement('tr');
-            ideaRow.innerHTML = `
-                <td>${idea.prenom}</td>
-                <td>${idea.nom}</td>
-                <td>${idea.title}</td>
-                <td>${idea.category}</td>
-                <td>${idea.description}</td>
-                <td>${idea.approved ? '<i class="fas fa-check-circle"></i>' : '<i class="fas fa-clock"></i>'}</td>
-                <td>
-                    <button onclick="approveIdea(${index})"><i class="fas fa-thumbs-${idea.approved ? 'down' : 'up'}"></i></button>
-                    <br>
-                    <button onclick="deleteIdea(${index})"><i class="fas fa-trash-alt"></i></button>
-                </td>
-            `;
-            ideasContainer.appendChild(ideaRow);
+    function sanitizeInput(input) {
+        const tempDiv = document.createElement("div");
+        tempDiv.textContent = input;
+        return tempDiv.innerHTML;
+    }
+
+    function clearErrors() {
+        document.querySelectorAll(".error").forEach(error => error.textContent = "");
+    }
+
+    function showError(id, message) {
+        document.getElementById(id).textContent = message;
+    }
+
+    function addIdea(prenom, nom, title, category, description, status = "En attente") {
+        const tableBody = document.querySelector("#ideasContainer tbody");
+        const row = document.createElement("tr");
+    
+        row.innerHTML = `
+            <td>${prenom}</td>
+            <td>${nom}</td>
+            <td>${title}</td>
+            <td>${category}</td>
+            <td>${description}</td>
+            <td>${status}</td> 
+            <td>
+                <div id="button-container">
+                     <button class="approve-btn"><i class="fas fa-check-circle"></i> Approuver</button>
+                     <button class="disapprove-btn"><i class="fas fa-times-circle"></i> Désapprouver</button>
+                     <button class="delete-btn"><i class="fas fa-trash-alt"></i> Supprimer</button>
+                </div>
+            </td>
+        `;
+    
+        row.querySelector(".approve-btn").addEventListener("click", () => {
+            updateStatus(row, "Approuvée");
+            storeIdeasInCookies(); // Mettre à jour les cookies après approbation
         });
+        row.querySelector(".disapprove-btn").addEventListener("click", () => {
+            updateStatus(row, "Désapprouvée");
+            storeIdeasInCookies(); // Mettre à jour les cookies après désapprobation
+        });
+        row.querySelector(".delete-btn").addEventListener("click", () => {
+            row.remove();
+            storeIdeasInCookies(); // Mettre à jour les cookies après suppression
+        });
+    
+        tableBody.appendChild(row);
     }
     
-    
 
-    window.approveIdea = (index) => {
-        ideas[index].approved = !ideas[index].approved;
-        setCookie('ideas', ideas, 30);
-        displayIdeas();
-    };
+    function updateStatus(row, status) {
+        row.cells[5].textContent = status;
+    }
 
-    window.deleteIdea = (index) => {
-        ideas.splice(index, 1);
-        setCookie('ideas', ideas, 30);
-        displayIdeas();
-    };
+    function storeIdeasInCookies() {
+        const ideas = [];
+        document.querySelectorAll("#ideasContainer tbody tr").forEach(row => {
+            const prenom = row.cells[0].textContent;
+            const nom = row.cells[1].textContent;
+            const title = row.cells[2].textContent;
+            const category = row.cells[3].textContent;
+            const description = row.cells[4].textContent;
+            const status = row.cells[5].textContent;
+            ideas.push({ prenom, nom, title, category, description, status });
+        });
+        setCookie("ideas", JSON.stringify(ideas), 30); // Exemple: 30 jours d'expiration
+    }
+
+    // Charger les idées depuis les cookies au chargement de la page
+    function loadIdeasFromCookies() {
+        const ideas = JSON.parse(getCookie("ideas")) || [];
+        ideas.forEach(idea => addIdea(idea.prenom, idea.nom, idea.title, idea.category, idea.description, idea.status));
+    }
+
+    function getCookie(name) {
+        const value = `; ${document.cookie}`;
+        const parts = value.split(`; ${name}=`);
+        if (parts.length === 2) return parts.pop().split(';').shift();
+    }
 
     function setCookie(name, value, days) {
-        const d = new Date();
-        d.setTime(d.getTime() + (days * 24 * 60 * 60 * 1000));
-        const expires = "expires=" + d.toUTCString();
-        document.cookie = name + "=" + JSON.stringify(value) + ";" + expires + ";path=/";
-    }
-    
-    function getCookie(name) {
-        const decodedCookie = decodeURIComponent(document.cookie);
-        const ca = decodedCookie.split(';');
-        const nameEQ = name + "=";
-        for (let i = 0; i < ca.length; i++) {
-            let c = ca[i];
-            while (c.charAt(0) == ' ') {
-                c = c.substring(1);
-            }
-            if (c.indexOf(nameEQ) == 0) {
-                return JSON.parse(c.substring(nameEQ.length, c.length));
-            }
+        let expires = "";
+        if (days) {
+            const date = new Date();
+            date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+            expires = `; expires=${date.toUTCString()}`;
         }
-        return [];
+        document.cookie = `${name}=${value}${expires}; path=/`;
     }
-    
-    function deleteCookie(name) {
-        document.cookie = name + '=; Max-Age=-99999999;';
-    }
-    
 
-    displayIdeas();
+    loadIdeasFromCookies();
 });
