@@ -95,9 +95,11 @@ document.addEventListener("DOMContentLoaded", () => {
             <td>${description}</td>
             <td>${status}</td> 
             <td>
-                <button class="approve-btn">Approuver</button>
-                <button class="disapprove-btn">Désapprouver</button>
-                <button class="delete-btn">Supprimer</button>
+                <div id="button-container">
+                     <button class="approve-btn"><i class="fas fa-check-circle"></i> Approuver</button>
+                     <button class="disapprove-btn"><i class="fas fa-times-circle"></i> Désapprouver</button>
+                     <button class="delete-btn"><i class="fas fa-trash-alt"></i> Supprimer</button>
+                </div>
             </td>
         `;
     
