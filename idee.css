@@ -159,3 +159,7 @@ th, td {
     position: relative;
     top: 2px;
 }
+
+.error {
+    color: #dc3545;
+}
